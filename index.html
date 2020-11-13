@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue框架班-佳楠老师</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #e9545457;
+    }
+
+    #chat {
+      width: 800px;
+      height: 600px;
+      background: #fff;
+      margin: 100px auto;
+      position: relative;
+    }
+
+    #chat .title {
+      line-height: 50px;
+      text-align: center;
+      background: #3DA1FE;
+      color: #fff;
+    }
+
+    #chat .chat-cont {
+      display: flex;
+      height: 511px;
+    }
+
+    #message {
+      width: 70%;
+      list-style-type: none;
+    }
+
+    #message #message-title {
+      text-align: center;
+      font-size: 12px;
+      line-height: 24px;
+      color: #333;
+    }
+
+    #message li {
+      padding: 5px 10px;
+    }
+
+    #message li  .name{
+      line-height: 30px;
+    }
+
+    #message li  .msg{
+      line-height: 40px;
+      text-indent: 40px;
+      background: #3DA1FE;
+      border-radius: 20px;
+    }
+
+    #message li:nth-child(odd) {
+      background: #eee;
+    }
+
+    #user {
+      width: 30%;
+      line-height: 40px;
+      text-align: center;
+      color: #333;
+      border-left: 1px solid #000;
+    }
+
+    form {
+      background: #000;
+      width: 70%;
+      display: flex;
+      position: absolute;
+      bottom: 0;
+    }
+
+    form input {
+      width: 90%;
+      padding: 10px;
+    }
+
+    form button {
+      width: 9%;
+      border: none;
+      background: #3da1fefc;
+      text-align: center;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat">
+    <div class="title">
+      Vue框架班技术聊天室
+    </div>
+    <div class="chat-cont">
+      <ul id="message">
+        <p id="message-title"></p>
+      </ul>
+      <form action="">
+        <input type="text" id="chatMess"><button>Send</button>
+      </form>
+      <ul id="user">
+        <p id="userNum"></p>
+      </ul>
+    </div>
+  </div>
+
+
+  <script src="https://unpkg.com/jquery@3.5.1/dist/jquery.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // DOM加载完毕之后执行
+    $(function() {
+      var socket = io()
+
+      let name = prompt('请输入你的昵称：')
+      console.log(name)
+      socket.emit('join', name)
+      socket.on('join', (obj) => {
+        console.log(obj)
+        $('#message-title').append($('<p>').html(`用户${obj.name}${obj.status}了聊天室`))
+        $('#user').append($('<p>').html(obj.name))
+      })
+
+      $('form').submit(function() {
+        // 我们需要把chat事件提交给后台服务器
+        socket.emit('chat', $('#chatMess').val()) // 把input框中的内容提交给后台服务器
+        $('#chatMess').val('')
+        return false
+      })
+
+      // 接收一下后台提交过来的聊天数据内容
+      socket.on('chat', function (msg) {
+        console.log(msg)
+        // 把消息插入到界面并进行展示
+        // $("#message").append($('<li>').html(msg))
+        $("#message").append($('<li>').html(`<p class='name'>${msg.name}</p><p class='msg'>${msg.msg}</p>`))
+      })
+
+      // 接收后台提交过来的在线人数数量
+      socket.on('userNum', function(num) {
+        $("#userNum").html(`<p>当前在线${num}人</p>`)
+      })
+    })
+  </script>
+</body>
+</html>
